@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXTSTEP — Premium Footwear · Real-Time 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --primary: #ff6b00;
+    --secondary: #00f5ff;
+    --accent: #7b2fff;
+    --dark: #050508;
+    --dark2: #080810;
+    --card: #0d0d18;
+    --card2: #12121f;
+    --text: #ffffff;
+    --text2: #7777aa;
+    --g1: linear-gradient(135deg, #ff6b00, #ff0080);
+    --g2: linear-gradient(135deg, #00f5ff, #7b2fff);
+    --g3: linear-gradient(135deg, #7b2fff, #ff6b00);
+    --glow1: 0 0 40px rgba(255,107,0,0.5);
+    --glow2: 0 0 40px rgba(0,245,255,0.5);
+    --glow3: 0 0 40px rgba(123,47,255,0.5);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--text); overflow-x: hidden; cursor: none; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--g1); border-radius: 4px; }
+
+/* CURSOR */
+#cursor { position: fixed; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; pointer-events: none; z-index: 99999; transform: translate(-50%,-50%); transition: transform 0.05s, width 0.2s, height 0.2s, background 0.2s; mix-blend-mode: difference; }
+#cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid var(--primary); border-radius: 50%; pointer-events: none; z-index: 99998; transform: translate(-50%,-50%); transition: transform 0.12s ease, width 0.3s, height 0.3s, border-color 0.3s; }
+#cursor.clicked { width: 20px; height: 20px; }
+#cursor-ring.hovered { width: 60px; height: 60px; border-color: var(--secondary); }
+
+/* LOADER */
+#loader {
+    position: fixed; inset: 0; background: var(--dark); z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px;
+}
+.loader-logo { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 900; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 6px; }
+.loader-sub { font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; letter-spacing: 6px; color: var(--text2); }
+.loader-status { font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: var(--primary); margin-top: -10px; min-height: 14px; text-transform: uppercase; }
+.loader-track { width: 280px; height: 2px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.loader-fill { height: 100%; width: 0; background: var(--g1); border-radius: 2px; transition: width 0.05s; }
+.loader-canvas { position: absolute; inset: 0; }
+
+/* PARTICLES */
+#particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+/* NAV */
+nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    padding: 22px 70px; display: flex; align-items: center; justify-content: space-between;
+    transition: all 0.4s ease;
+}
+nav::before { content: ''; position: absolute; inset: 0; background: rgba(5,5,8,0); backdrop-filter: blur(0px); border-bottom: 1px solid transparent; transition: all 0.4s ease; }
+nav.scrolled::before { background: rgba(5,5,8,0.92); backdrop-filter: blur(24px); border-bottom-color: rgba(255,107,0,0.15); }
+.nav-logo { font-family: 'Orbitron', sans-serif; font-size: 1.7rem; font-weight: 900; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 4px; position: relative; z-index: 1; text-decoration: none; }
+.nav-links { display: flex; list-style: none; gap: 45px; position: relative; z-index: 1; }
+.nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; transition: all 0.3s; position: relative; }
+.nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--g1); transition: width 0.3s; }
+.nav-links a:hover { color: var(--primary); }
+.nav-links a:hover::after { width: 100%; }
+.nav-right { display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; }
+.nav-icon-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.1rem; cursor: pointer; transition: color 0.3s; padding: 8px; }
+.nav-icon-btn:hover { color: var(--primary); }
+.cart-btn-nav {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,107,0,0.1); border: 1px solid rgba(255,107,0,0.3);
+    color: var(--primary); padding: 10px 22px; font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem; font-weight: 700; letter-spacing: 3px; cursor: pointer;
+    clip-path: polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);
+    transition: all 0.3s;
+}
+.cart-btn-nav:hover { background: var(--primary); color: #fff; box-shadow: var(--glow1); }
+.cart-badge { background: var(--secondary); color: var(--dark); width: 18px; height: 18px; border-radius: 50%; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+
+/* HERO */
+#hero { height: 100vh; position: relative; display: flex; align-items: center; overflow: hidden; }
+#hero-bg { position: absolute; inset: 0; z-index: 0; }
+.hero-grid-lines { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,107,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,107,0,0.04) 1px, transparent 1px); background-size: 60px 60px; }
+.hero-glow { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,107,0,0.12) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+.hero-glow2 { position: absolute; right: 20%; top: 30%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,245,255,0.08) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+#hero-3d { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 55%; height: 90vh; z-index: 1; }
+.hero-left { position: relative; z-index: 2; padding: 0 70px; max-width: 680px; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; background: rgba(255,107,0,0.1); border: 1px solid rgba(255,107,0,0.3); color: var(--primary); padding: 8px 18px; border-radius: 100px; font-family: 'Rajdhani', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 28px; animation: fadeUp 0.8s 0.3s both; }
+.eyebrow-dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; animation: pulse 1.2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.hero-h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(2.8rem,5.5vw,5.5rem); font-weight: 900; line-height: 1.05; margin-bottom: 22px; animation: fadeUp 0.8s 0.5s both; }
+.h1-grad { background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
+.h1-out { -webkit-text-stroke: 1.5px rgba(255,255,255,0.2); -webkit-text-fill-color: transparent; display: block; }
+.hero-p { color: var(--text2); font-size: 1rem; line-height: 1.85; margin-bottom: 38px; animation: fadeUp 0.8s 0.7s both; }
+.hero-btns { display: flex; gap: 16px; animation: fadeUp 0.8s 0.9s both; }
+.btn-glow { padding: 16px 38px; background: var(--g1); border: none; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; clip-path: polygon(14px 0%,100% 0%,calc(100% - 14px) 100%,0% 100%); position: relative; overflow: hidden; transition: all 0.3s; text-decoration: none; display: inline-block; }
+.btn-glow::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent); transition: left 0.5s; }
+.btn-glow:hover::before { left: 100%; }
+.btn-glow:hover { box-shadow: var(--glow1); transform: translateY(-2px); }
+.btn-outline { padding: 16px 38px; background: transparent; border: 1px solid rgba(0,245,255,0.4); color: var(--secondary); font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; clip-path: polygon(14px 0%,100% 0%,calc(100% - 14px) 100%,0% 100%); transition: all 0.3s; text-decoration: none; display: inline-block; }
+.btn-outline:hover { background: var(--secondary); color: var(--dark); box-shadow: var(--glow2); transform: translateY(-2px); }
+.hero-stats { display: flex; gap: 50px; margin-top: 55px; animation: fadeUp 0.8s 1.1s both; }
+.stat-n { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-l { font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; color: var(--text2); }
+.stat-div { width: 1px; height: 50px; background: rgba(255,255,255,0.08); }
+.hero-scroll { position: absolute; bottom: 35px; left: 70px; display: flex; align-items: center; gap: 12px; z-index: 2; animation: fadeUp 0.8s 1.3s both; }
+.scroll-line { width: 50px; height: 1px; background: var(--g1); }
+.scroll-text { font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: var(--text2); text-transform: uppercase; }
+.hero-chip { position: absolute; background: rgba(10,10,20,0.8); border: 1px solid rgba(255,107,0,0.25); backdrop-filter: blur(12px); border-radius: 10px; padding: 10px 18px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: var(--secondary); letter-spacing: 2px; z-index: 3; animation: chipFloat 4s ease-in-out infinite; pointer-events: none; }
+.chip1 { top: 22%; right: 30%; animation-delay: 0s; }
+.chip2 { top: 65%; right: 10%; animation-delay: 1.5s; }
+.chip3 { top: 42%; right: 53%; animation-delay: 3s; }
+@keyframes chipFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+/* MARQUEE */
+.marquee-wrap { background: var(--g1); padding: 13px 0; overflow: hidden; position: relative; z-index: 2; }
+.marquee-inner { display: flex; gap: 0; animation: scroll 25s linear infinite; white-space: nowrap; }
+.marquee-item { font-family: 'Rajdhani', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; padding: 0 40px; display: flex; align-items: center; gap: 20px; }
+.marquee-item::after { content: '◆'; font-size: 0.5rem; }
+@keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* SECTION COMMONS */
+.s-pad { padding: 130px 70px; }
+.s-pad2 { padding: 130px 70px; background: var(--dark2); }
+.s-tag { display: inline-block; font-family: 'Rajdhani', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; color: var(--primary); margin-bottom: 14px; }
+.s-title { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem,3.5vw,3.2rem); font-weight: 700; line-height: 1.15; }
+.s-title span { background: var(--g2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.s-center { text-align: center; margin-bottom: 70px; }
+
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(35px); transition: opacity 0.75s ease, transform 0.75s ease; }
+.reveal.up { opacity: 1; transform: translateY(0); }
+.reveal-left { opacity: 0; transform: translateX(-40px); transition: opacity 0.75s ease, transform 0.75s ease; }
+.reveal-left.up { opacity: 1; transform: translateX(0); }
+.reveal-right { opacity: 0; transform: translateX(40px); transition: opacity 0.75s ease, transform 0.75s ease; }
+.reveal-right.up { opacity: 1; transform: translateX(0); }
+
+/* FILTER */
+.filter-bar { display: flex; justify-content: center; gap: 12px; margin-bottom: 55px; flex-wrap: wrap; }
+.f-btn { padding: 9px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text2); font-family: 'Rajdhani', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; border-radius: 100px; transition: all 0.3s; }
+.f-btn.active, .f-btn:hover { background: var(--g1); border-color: transparent; color: #fff; box-shadow: var(--glow1); }
+
+/* PRODUCTS GRID */
+.p-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px,1fr)); gap: 25px; }
+
+/* PRODUCT CARD */
+.p-card { background: var(--card); border: 1px solid rgba(255,255,255,0.06); border-radius: 22px; overflow: hidden; transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94); cursor: pointer; position: relative; }
+.p-card:hover { transform: translateY(-12px); border-color: rgba(255,107,0,0.35); box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(255,107,0,0.12); }
+.p-card-img { position: relative; height: 270px; background: radial-gradient(circle at 50% 60%, rgba(255,107,0,0.08), var(--card2) 70%); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.p-shoe-canvas { width: 100%; height: 100%; display: block; }
+.p-badge { position: absolute; top: 14px; left: 14px; padding: 5px 13px; border-radius: 100px; font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; z-index: 3; }
+.b-new { background: var(--g2); }
+.b-hot { background: var(--g1); }
+.b-sale { background: linear-gradient(135deg,#00c853,#00e676); color: var(--dark); }
+.p-wishlist { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; z-index: 3; font-size: 0.85rem; color: var(--text2); }
+.p-wishlist:hover, .p-wishlist.active { background: rgba(255,0,80,0.2); border-color: #ff0050; color: #ff0050; }
+.p-view-3d { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(5,5,8,0.95)); padding: 30px 20px 16px; display: flex; align-items: center; justify-content: center; gap: 10px; transform: translateY(100%); transition: transform 0.35s ease; }
+.p-card:hover .p-view-3d { transform: translateY(0); }
+.view3d-btn { flex: 1; padding: 10px; background: var(--g1); border: none; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 2px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.3s; }
+.view3d-btn:hover { box-shadow: var(--glow1); transform: scale(1.03); }
+.view3d-btn.outline { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--text2); flex: 0 0 auto; width: 44px; padding: 10px; }
+.view3d-btn.outline:hover { border-color: var(--secondary); color: var(--secondary); }
+.p-info { padding: 22px; }
+.p-cat { font-size: 0.7rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 7px; }
+.p-name { font-family: 'Rajdhani', sans-serif; font-size: 1.35rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
+.p-colors { display: flex; gap: 7px; margin-bottom: 12px; }
+.p-color { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; outline: 2px solid transparent; }
+.p-color:hover, .p-color.active { border-color: #fff; outline-color: rgba(255,255,255,0.3); transform: scale(1.15); }
+.p-rating { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.p-stars { color: #ffd700; font-size: 0.78rem; letter-spacing: 1px; }
+.p-rev { color: var(--text2); font-size: 0.75rem; }
+.p-foot { display: flex; align-items: center; justify-content: space-between; }
+.p-price { font-family: 'Orbitron', sans-serif; font-size: 1.45rem; font-weight: 700; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.p-price-old { font-size: 0.8rem; color: var(--text2); text-decoration: line-through; }
+.p-add { width: 44px; height: 44px; background: var(--g1); border: none; border-radius: 50%; color: #fff; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 4px 15px rgba(255,107,0,0.3); }
+.p-add:hover { transform: rotate(90deg) scale(1.1); box-shadow: var(--glow1); }
+
+/* 3D MODAL */
+#modal-3d {
+    position: fixed; inset: 0; z-index: 5000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+#modal-3d.open { opacity: 1; pointer-events: all; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(2,2,6,0.95); backdrop-filter: blur(20px); }
+.modal-box {
+    position: relative; z-index: 1; width: 95vw; max-width: 1150px; height: 88vh;
+    background: var(--card); border: 1px solid rgba(255,107,0,0.2); border-radius: 28px;
+    display: grid; grid-template-columns: 1.1fr 1fr; overflow: hidden;
+    transform: scale(0.9) translateY(30px); transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+#modal-3d.open .modal-box { transform: scale(1) translateY(0); }
+.modal-viewer { position: relative; background: radial-gradient(circle at 50% 50%, rgba(255,107,0,0.08) 0%, var(--dark2) 70%); border-right: 1px solid rgba(255,255,255,0.06); }
+#modal-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+#modal-canvas:active { cursor: grabbing; }
+.modal-controls { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+.m-ctrl { background: rgba(10,10,20,0.8); border: 1px solid rgba(255,255,255,0.1); color: var(--text2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+.m-ctrl:hover { border-color: var(--primary); color: var(--primary); }
+.modal-hint { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; padding: 7px 18px; font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 3px; color: var(--text2); white-space: nowrap; }
+.modal-info { padding: 45px 40px; display: flex; flex-direction: column; overflow-y: auto; }
+.modal-close { position: absolute; top: 22px; right: 22px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text2); width: 42px; height: 42px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; z-index: 10; }
+.modal-close:hover { background: rgba(255,107,0,0.2); border-color: var(--primary); color: var(--primary); }
+.modal-cat { font-size: 0.72rem; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; color: var(--primary); margin-bottom: 10px; }
+.modal-name { font-family: 'Orbitron', sans-serif; font-size: clamp(1.5rem,3vw,2.2rem); font-weight: 700; line-height: 1.1; margin-bottom: 16px; }
+.modal-rating { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.modal-desc { color: var(--text2); font-size: 0.9rem; line-height: 1.85; margin-bottom: 28px; }
+.modal-price-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 30px; }
+.modal-price { font-family: 'Orbitron', sans-serif; font-size: 2.4rem; font-weight: 900; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.modal-old-price { font-size: 1rem; color: var(--text2); text-decoration: line-through; }
+.modal-section-label { font-family: 'Rajdhani', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+.modal-colors { display: flex; gap: 10px; margin-bottom: 25px; }
+.modal-color { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.25s; outline: 2px solid transparent; }
+.modal-color:hover, .modal-color.active { border-color: #fff; outline-color: rgba(255,255,255,0.4); transform: scale(1.2); }
+.modal-sizes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.size-btn { padding: 9px 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text2); font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+.size-btn:hover, .size-btn.active { background: rgba(255,107,0,0.15); border-color: var(--primary); color: var(--primary); }
+.size-btn.sold { opacity: 0.3; text-decoration: line-through; cursor: not-allowed; }
+.modal-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+.spec-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 15px; }
+.spec-label { font-size: 0.68rem; letter-spacing: 3px; text-transform: uppercase; color: var(--text2); margin-bottom: 4px; }
+.spec-val { font-family: 'Rajdhani', sans-serif; font-size: 0.92rem; font-weight: 700; }
+.modal-btns { display: flex; gap: 12px; margin-top: auto; }
+.modal-add { flex: 1; padding: 16px; background: var(--g1); border: none; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; border-radius: 12px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.modal-add:hover { box-shadow: var(--glow1); transform: translateY(-2px); }
+.modal-wish { width: 52px; height: 52px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text2); border-radius: 12px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.modal-wish:hover { border-color: #ff0050; color: #ff0050; background: rgba(255,0,80,0.1); }
+.color-label-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,245,255,0.08); border: 1px solid rgba(0,245,255,0.2); border-radius: 100px; padding: 5px 14px; font-family: 'Rajdhani',sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 3px; color: var(--secondary); margin-bottom: 22px; }
+
+/* FEATURE SECTION */
+.feature-split { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.feature-3d-wrap { height: 520px; background: radial-gradient(circle at center, rgba(123,47,255,0.1) 0%, transparent 70%); border: 1px solid rgba(123,47,255,0.15); border-radius: 28px; position: relative; overflow: hidden; }
+#feat-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+#feat-canvas:active { cursor: grabbing; }
+.feat-label { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 4px; color: var(--text2); text-transform: uppercase; pointer-events: none; }
+.feature-items { display: flex; flex-direction: column; gap: 18px; margin-top: 38px; }
+.feat-item { display: flex; gap: 18px; align-items: flex-start; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; transition: all 0.3s; }
+.feat-item:hover { border-color: rgba(255,107,0,0.3); transform: translateX(8px); background: rgba(255,107,0,0.04); }
+.feat-icon { width: 48px; height: 48px; background: var(--g1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.feat-text h4 { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 5px; }
+.feat-text p { color: var(--text2); font-size: 0.85rem; line-height: 1.65; }
+
+/* COLLECTIONS */
+.col-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 290px 290px; gap: 18px; }
+.col-card { position: relative; border-radius: 22px; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.06); }
+.col-card.tall { grid-row: span 2; }
+.col-canvas-wrap { width: 100%; height: 100%; }
+.col-canvas { width: 100%; height: 100%; display: block; }
+.col-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(5,5,8,0.92) 25%, transparent 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 28px; transition: background 0.4s; pointer-events: none; }
+.col-overlay > * { pointer-events: auto; }
+.col-card:hover .col-overlay { background: linear-gradient(to top, rgba(5,5,8,0.96) 35%, rgba(255,107,0,0.05) 100%); }
+.col-name { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+.col-count { color: var(--text2); font-size: 0.78rem; letter-spacing: 3px; margin-bottom: 14px; }
+.col-link { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); font-family: 'Rajdhani', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; transition: gap 0.3s; }
+.col-link:hover { gap: 16px; }
+
+/* TESTIMONIALS */
+.t-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+.t-card { background: var(--card); border: 1px solid rgba(255,255,255,0.06); border-radius: 22px; padding: 32px; transition: all 0.35s; }
+.t-card:hover { border-color: rgba(0,245,255,0.25); transform: translateY(-6px); box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+.t-quote { font-size: 3.5rem; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; margin-bottom: 16px; }
+.t-text { color: var(--text2); font-size: 0.9rem; line-height: 1.82; margin-bottom: 22px; }
+.t-stars { color: #ffd700; font-size: 0.82rem; letter-spacing: 2px; margin-bottom: 20px; }
+.t-author { display: flex; align-items: center; gap: 14px; }
+.t-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--g1); display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; }
+.t-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.95rem; }
+.t-sub { color: var(--text2); font-size: 0.75rem; margin-top: 2px; }
+
+/* NEWSLETTER */
+.nl-section { padding: 100px 70px; text-align: center; position: relative; overflow: hidden; }
+.nl-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 700px; height: 700px; background: radial-gradient(circle, rgba(255,107,0,0.07) 0%, transparent 70%); pointer-events: none; }
+.nl-form { display: flex; gap: 0; max-width: 480px; margin: 38px auto 0; }
+.nl-input { flex: 1; padding: 15px 22px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-right: none; color: #fff; font-size: 0.88rem; border-radius: 8px 0 0 8px; outline: none; transition: border-color 0.3s; }
+.nl-input:focus { border-color: var(--primary); }
+.nl-input::placeholder { color: var(--text2); }
+.nl-btn { padding: 15px 28px; background: var(--g1); border: none; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 3px; cursor: pointer; border-radius: 0 8px 8px 0; transition: box-shadow 0.3s; }
+.nl-btn:hover { box-shadow: var(--glow1); }
+
+/* CART SIDEBAR */
+#cart-sidebar { position: fixed; top: 0; right: -430px; width: 430px; height: 100%; background: var(--card2); border-left: 1px solid rgba(255,107,0,0.15); z-index: 4000; display: flex; flex-direction: column; transition: right 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+#cart-sidebar.open { right: 0; }
+#cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 3999; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+#cart-overlay.on { opacity: 1; pointer-events: all; }
+.cart-head { padding: 28px 28px 22px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+.cart-title-text { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700; }
+.cart-x { background: none; border: none; color: var(--text2); font-size: 1.3rem; cursor: pointer; transition: color 0.3s; }
+.cart-x:hover { color: var(--primary); }
+#cart-body { flex: 1; overflow-y: auto; padding: 18px 24px; }
+.cart-empty { text-align: center; padding: 70px 20px; }
+.cart-empty i { font-size: 3.5rem; color: var(--text2); opacity: 0.2; display: block; margin-bottom: 16px; }
+.cart-empty p { font-family: 'Rajdhani', sans-serif; letter-spacing: 3px; font-size: 0.82rem; color: var(--text2); }
+.ci { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.ci-img { width: 74px; height: 74px; background: var(--card); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0; }
+.ci-info { flex: 1; }
+.ci-name { font-family: 'Rajdhani', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+.ci-price { color: var(--primary); font-size: 0.88rem; font-weight: 600; margin-bottom: 10px; }
+.ci-qty { display: flex; align-items: center; gap: 12px; }
+.q-btn { width: 26px; height: 26px; background: rgba(255,255,255,0.07); border: none; color: #fff; border-radius: 50%; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.q-btn:hover { background: var(--primary); }
+.q-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; min-width: 20px; text-align: center; }
+.ci-del { background: none; border: none; color: rgba(255,255,255,0.2); cursor: pointer; font-size: 0.85rem; transition: color 0.2s; }
+.ci-del:hover { color: #ff0050; }
+.cart-foot { padding: 22px 24px 28px; border-top: 1px solid rgba(255,255,255,0.06); }
+.cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.cart-total-lbl { font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; }
+.cart-total-val { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 700; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.checkout-btn { width: 100%; padding: 17px; background: var(--g1); border: none; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; border-radius: 12px; transition: all 0.3s; }
+.checkout-btn:hover { box-shadow: var(--glow1); transform: translateY(-2px); }
+
+/* TOAST */
+#toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(90px); background: var(--card2); border: 1px solid rgba(255,107,0,0.35); border-radius: 12px; padding: 14px 26px; display: flex; align-items: center; gap: 13px; z-index: 9999; transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); box-shadow: 0 20px 50px rgba(0,0,0,0.5), var(--glow1); min-width: 280px; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+.toast-icon { color: var(--primary); font-size: 1.1rem; }
+.toast-msg { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.9rem; flex: 1; }
+.toast-close-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 0.85rem; }
+
+/* FOOTER */
+footer { background: #030305; padding: 80px 70px 28px; }
+.foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 55px; margin-bottom: 55px; }
+.foot-brand-logo { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 900; background: var(--g1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 4px; margin-bottom: 18px; display: block; }
+.foot-brand-desc { color: var(--text2); font-size: 0.87rem; line-height: 1.8; margin-bottom: 24px; }
+.socials { display: flex; gap: 10px; }
+.soc-btn { width: 38px; height: 38px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text2); text-decoration: none; font-size: 0.85rem; transition: all 0.3s; }
+.soc-btn:hover { background: var(--g1); border-color: transparent; color: #fff; box-shadow: var(--glow1); transform: translateY(-4px); }
+.foot-col h4 { font-family: 'Rajdhani', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 22px; }
+.foot-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.foot-links a { color: var(--text2); text-decoration: none; font-size: 0.87rem; transition: all 0.3s; display: flex; align-items: center; gap: 0; }
+.foot-links a:hover { color: #fff; padding-left: 8px; }
+.foot-bottom { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 26px; display: flex; align-items: center; justify-content: space-between; }
+.foot-copy { color: var(--text2); font-size: 0.82rem; }
+.pay-icons { display: flex; gap: 8px; }
+.pay-ic { padding: 5px 11px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-size: 0.7rem; font-weight: 700; color: var(--text2); }
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+    nav{padding:18px 30px;}
+    .nav-links{gap:25px;}
+    .s-pad,.s-pad2{padding:90px 30px;}
+    .hero-left{padding:0 30px;}
+    #hero-3d{width:50%;}
+    .modal-box{grid-template-columns:1fr;}
+    .modal-viewer{height:50vh;}
+    .feature-split{grid-template-columns:1fr;gap:40px;}
+    .foot-grid{grid-template-columns:1fr 1fr;gap:35px;}
+}
+@media(max-width:768px){
+    body { cursor: auto; }
+    #cursor, #cursor-ring { display: none; }
+    .nav-links{display:none;}
+    #hero-3d{display:none;}
+    .hero-left{max-width:100%;}
+    .hero-h1{font-size:2.5rem;}
+    .p-grid{grid-template-columns:1fr;}
+    .col-grid{grid-template-columns:1fr;grid-template-rows:auto;}
+    .col-card.tall{grid-row:span 1;}
+    .t-grid{grid-template-columns:1fr;}
+    #cart-sidebar{width:100%;right:-100%;}
+    .modal-box{grid-template-columns:1fr;height:95vh;}
+    .modal-viewer{height:45vh;}
+    .foot-grid{grid-template-columns:1fr;}
+}
+    </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+    <canvas class="loader-canvas" id="loader-canvas"></canvas>
+    <div class="loader-logo">NEXTSTEP</div>
+    <div class="loader-sub">PREMIUM FOOTWEAR · EST. 2025</div>
+    <div class="loader-status" id="loader-status">INITIALIZING 3D ENGINE</div>
+    <div class="loader-track"><div class="loader-fill" id="loader-fill"></div></div>
+</div>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- PARTICLES -->
+<canvas id="particles"></canvas>
+
+<!-- CART OVERLAY -->
+<div id="cart-overlay"></div>
+
+<!-- CART SIDEBAR -->
+<div id="cart-sidebar">
+    <div class="cart-head">
+        <span class="cart-title-text">YOUR CART</span>
+        <button class="cart-x" id="cart-x"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="cart-body">
+        <div class="cart-empty">
+            <i class="fas fa-shopping-bag"></i>
+            <p>YOUR CART IS EMPTY</p>
+        </div>
+    </div>
+    <div class="cart-foot">
+        <div class="cart-total-row">
+            <span class="cart-total-lbl">TOTAL</span>
+            <span class="cart-total-val" id="cart-total">$0.00</span>
+        </div>
+        <button class="checkout-btn" onclick="toast('Redirecting to checkout...')">CHECKOUT NOW <i class="fas fa-arrow-right"></i></button>
+    </div>
+</div>
+
+<!-- 3D MODAL -->
+<div id="modal-3d">
+    <div class="modal-backdrop" id="modal-bd"></div>
+    <div class="modal-box">
+        <div class="modal-viewer">
+            <canvas id="modal-canvas"></canvas>
+            <div class="modal-hint"><i class="fas fa-mouse"></i> &nbsp;DRAG TO ROTATE · SCROLL TO ZOOM</div>
+            <div class="modal-controls">
+                <button class="m-ctrl" title="Reset" onclick="resetModalCam()"><i class="fas fa-redo"></i></button>
+                <button class="m-ctrl" title="Zoom In" onclick="zoomModal(-0.5)"><i class="fas fa-plus"></i></button>
+                <button class="m-ctrl" title="Zoom Out" onclick="zoomModal(0.5)"><i class="fas fa-minus"></i></button>
+                <button class="m-ctrl" title="Auto Rotate" id="auto-rot-btn" onclick="toggleAutoRotate()"><i class="fas fa-sync"></i></button>
+            </div>
+        </div>
+        <div class="modal-info" id="modal-info">
+            <button class="modal-close" id="modal-close-btn"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+    <i class="fas fa-check-circle toast-icon"></i>
+    <span class="toast-msg" id="toast-msg">Added to cart!</span>
+    <button class="toast-close-btn" onclick="hideToast()"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+    <a href="#" class="nav-logo">NEXTSTEP</a>
+    <ul class="nav-links">
+        <li><a href="#products">Shop</a></li>
+        <li><a href="#collections">Collections</a></li>
+        <li><a href="#feature">Featured</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+    </ul>
+    <div class="nav-right">
+        <button class="nav-icon-btn"><i class="fas fa-search"></i></button>
+        <button class="nav-icon-btn"><i class="fas fa-heart"></i></button>
+        <button class="cart-btn-nav" id="cart-toggle">
+            <i class="fas fa-shopping-bag"></i> CART
+            <span class="cart-badge" id="cart-badge">0</span>
+        </button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+    <div id="hero-bg">
+        <div class="hero-grid-lines"></div>
+        <div class="hero-glow"></div>
+        <div class="hero-glow2"></div>
+    </div>
+    <div id="hero-3d"><canvas id="hero-canvas" style="width:100%;height:100%;display:block;"></canvas></div>
+    <div class="hero-left">
+        <div class="hero-eyebrow"><span class="eyebrow-dot"></span>NEW COLLECTION 2025</div>
+        <h1 class="hero-h1">
+            <span class="h1-grad">STEP INTO</span>
+            <span class="h1-out">THE FUTURE</span>
+        </h1>
+        <p class="hero-p">Premium footwear where cutting-edge technology meets uncompromising style. Explore every shoe in real-time 3D — drag, rotate, zoom. Engineered for those who demand excellence in every stride.</p>
+        <div class="hero-btns">
+            <a href="#products" class="btn-glow">Shop Now</a>
+            <a href="#feature" class="btn-outline">Explore Tech</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat"><div class="stat-n" data-target="500">0</div><div class="stat-l">Styles</div></div>
+            <div class="stat-div"></div>
+            <div class="stat"><div class="stat-n" data-target="50000">0</div><div class="stat-l">Customers</div></div>
+            <div class="stat-div"></div>
+            <div class="stat"><div class="stat-n" data-target="48">0</div><div class="stat-l">Countries</div></div>
+        </div>
+    </div>
+    <div class="hero-chip chip1">⚡ AIR BOOST TECH</div>
+    <div class="hero-chip chip2">🔥 LIMITED DROP</div>
+    <div class="hero-chip chip3">✦ CARBON SOLE</div>
+    <div class="hero-scroll"><div class="scroll-line"></div><span class="scroll-text">Scroll to explore</span></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+    <div class="marquee-inner" id="mq">
+        <span class="marquee-item">FREE SHIPPING OVER $100</span>
+        <span class="marquee-item">NEW ARRIVALS WEEKLY</span>
+        <span class="marquee-item">30-DAY FREE RETURNS</span>
+        <span class="marquee-item">PREMIUM QUALITY ASSURED</span>
+        <span class="marquee-item">EXCLUSIVE LIMITED DROPS</span>
+        <span class="marquee-item">WORLDWIDE DELIVERY</span>
+        <span class="marquee-item">FREE SHIPPING OVER $100</span>
+        <span class="marquee-item">NEW ARRIVALS WEEKLY</span>
+        <span class="marquee-item">30-DAY FREE RETURNS</span>
+        <span class="marquee-item">PREMIUM QUALITY ASSURED</span>
+        <span class="marquee-item">EXCLUSIVE LIMITED DROPS</span>
+        <span class="marquee-item">WORLDWIDE DELIVERY</span>
+    </div>
+</div>
+
+<!-- PRODUCTS -->
+<section id="products" class="s-pad2">
+    <div class="s-center reveal">
+        <div class="s-tag">// Featured Collection</div>
+        <h2 class="s-title">HOT <span>DROPS</span></h2>
+    </div>
+    <div class="filter-bar reveal">
+        <button class="f-btn active" data-f="all">All</button>
+        <button class="f-btn" data-f="running">Running</button>
+        <button class="f-btn" data-f="lifestyle">Lifestyle</button>
+        <button class="f-btn" data-f="basketball">Basketball</button>
+        <button class="f-btn" data-f="training">Training</button>
+    </div>
+    <div class="p-grid" id="p-grid"></div>
+</section>
+
+<!-- FEATURE -->
+<section id="feature" class="s-pad">
+    <div class="feature-split">
+        <div class="feature-3d-wrap reveal-left">
+            <canvas id="feat-canvas"></canvas>
+            <div class="feat-label"><i class="fas fa-mouse" style="margin-right:6px;"></i>DRAG TO INTERACT</div>
+        </div>
+        <div class="reveal-right">
+            <div class="s-tag">// SIGNATURE TECH</div>
+            <h2 class="s-title" style="margin-bottom:16px;">ULTRA BOOST <span>ELITE</span></h2>
+            <p style="color:var(--text2);font-size:0.92rem;line-height:1.88;margin-bottom:30px;">Engineered with proprietary multi-layer cushioning and breathable adaptive mesh. Every stride powered by next-generation innovation. Built for athletes who accept nothing less than extraordinary.</p>
+            <div class="color-label-badge">✦ NOW IN 4 COLORWAYS</div>
+            <div class="feature-items">
+                <div class="feat-item">
+                    <div class="feat-icon">⚡</div>
+                    <div class="feat-text"><h4>87% ENERGY RETURN</h4><p>Advanced reactive foam delivers unmatched energy return for peak athletic performance.</p></div>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">🌬️</div>
+                    <div class="feat-text"><h4>360° ADAPTIVE AIRFLOW</h4><p>Engineered mesh zones optimize ventilation based on your activity intensity.</p></div>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">🔬</div>
+                    <div class="feat-text"><h4>CARBON NANO-PLATE</h4><p>Military-grade carbon fiber reinforcement adapts to your unique biomechanics.</p></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:35px;flex-wrap:wrap;">
+                <div>
+                    <div style="font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:700;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">$289</div>
+                    <div style="color:var(--text2);font-size:0.82rem;text-decoration:line-through;">$399</div>
+                </div>
+                <button class="btn-glow" onclick="addToCart({id:99,name:'Ultra Boost Elite',price:289,oldPrice:399,cat:'running',colors:['#ff6b00','#00f5ff','#fff','#111'],desc:'Flagship performance running shoe with carbon nano-plate technology.'})">
+                    <i class="fas fa-cart-plus" style="margin-right:8px;"></i>ADD TO CART
+                </button>
+                <button class="btn-outline" onclick="openModal(PRODUCTS[0])">VIEW IN 3D</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COLLECTIONS -->
+<section id="collections" class="s-pad2">
+    <div class="s-center reveal">
+        <div class="s-tag">// Browse By Style</div>
+        <h2 class="s-title">SHOP <span>COLLECTIONS</span></h2>
+    </div>
+    <div class="col-grid reveal" id="col-grid"></div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews" class="s-pad">
+    <div class="s-center reveal">
+        <div class="s-tag">// Customer Stories</div>
+        <h2 class="s-title">WHAT THEY <span>SAY</span></h2>
+    </div>
+    <div class="t-grid reveal">
+        <div class="t-card"><div class="t-quote">"</div><p class="t-text">These shoes completely changed my runs. The energy return is insane — I shaved 2 minutes off my 5K. The design gets compliments everywhere I go.</p><div class="t-stars">★★★★★</div><div class="t-author"><div class="t-avatar">JK</div><div><div class="t-name">Jordan Kim</div><div class="t-sub">Verified · Air Phantom X</div></div></div></div>
+        <div class="t-card"><div class="t-quote">"</div><p class="t-text">Best footwear purchase of my life. The 3D viewer helped me pick the perfect colorway. Arrived in 2 days, packaged beautifully. Absolute perfection.</p><div class="t-stars">★★★★★</div><div class="t-author"><div class="t-avatar">AM</div><div><div class="t-name">Alex Morgan</div><div class="t-sub">Verified · Ultra Boost Elite</div></div></div></div>
+        <div class="t-card"><div class="t-quote">"</div><p class="t-text">The interactive 3D model sold me instantly. I could see every detail before buying. Quality exceeded my expectations. NEXTSTEP for life!</p><div class="t-stars">★★★★★</div><div class="t-author"><div class="t-avatar">SR</div><div><div class="t-name">Sam Rodriguez</div><div class="t-sub">Verified · Court King Pro</div></div></div></div>
+    </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="nl-section s-pad2">
+    <div class="nl-glow"></div>
+    <div class="reveal" style="position:relative;z-index:1;">
+        <div class="s-tag">// STAY IN THE LOOP</div>
+        <h2 class="s-title">GET EXCLUSIVE <span>DROPS</span></h2>
+        <p style="color:var(--text2);margin-top:14px;font-size:0.92rem;">First access to limited releases, exclusive offers & early drops.</p>
+        <form class="nl-form" onsubmit="nlSubmit(event)">
+            <input type="email" class="nl-input" placeholder="your@email.com" required>
+            <button type="submit" class="nl-btn">JOIN</button>
+        </form>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="foot-grid">
+        <div>
+            <span class="foot-brand-logo">NEXTSTEP</span>
+            <p class="foot-brand-desc">Where performance meets future-forward design. Premium footwear engineered for those who refuse to compromise on excellence.</p>
+            <div class="socials">
+                <a href="#" class="soc-btn"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="soc-btn"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="soc-btn"><i class="fab fa-tiktok"></i></a>
+                <a href="#" class="soc-btn"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="soc-btn"><i class="fab fa-pinterest"></i></a>
+            </div>
+        </div>
+        <div class="foot-col"><h4>Shop</h4><ul class="foot-links"><li><a href="#">New Arrivals</a></li><li><a href="#">Running</a></li><li><a href="#">Basketball</a></li><li><a href="#">Lifestyle</a></li><li><a href="#">Training</a></li><li><a href="#">Sale</a></li></ul></div>
+        <div class="foot-col"><h4>Help</h4><ul class="foot-links"><li><a href="#">Size Guide</a></li><li><a href="#">Shipping Info</a></li><li><a href="#">Returns</a></li><li><a href="#">Track Order</a></li><li><a href="#">FAQ</a></li><li><a href="#">Contact</a></li></ul></div>
+        <div class="foot-col"><h4>Company</h4><ul class="foot-links"><li><a href="#">Our Story</a></li><li><a href="#">Sustainability</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul></div>
+    </div>
+    <div class="foot-bottom">
+        <p class="foot-copy">© 2025 NEXTSTEP. All rights reserved.</p>
+        <div class="pay-icons">
+            <span class="pay-ic">VISA</span><span class="pay-ic">MC</span><span class="pay-ic">AMEX</span><span class="pay-ic">PAYPAL</span><span class="pay-ic">APPLE PAY</span><span class="pay-ic">CRYPTO</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+// =============================================
+// LIBRARY URLS
+// =============================================
+const SCRIPTS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+    'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+    'https://unpkg.com/three@0.128.0/examples/js/environments/RoomEnvironment.js'
+];
+// Real photoreal shoe — Khronos MaterialsVariantsShoe sample (PBR, baked textures)
+const SHOE_URLS = [
+    'https://threejs.org/examples/models/gltf/MaterialsVariantsShoe/glTF/MaterialsVariantsShoe.gltf',
+    'https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/MaterialsVariantsShoe/glTF/MaterialsVariantsShoe.gltf'
+];
+
+function loadScripts(urls) {
+    return urls.reduce((chain, url) => chain.then(() => new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = url; s.onload = res; s.onerror = () => rej(new Error('Failed: ' + url));
+        document.head.appendChild(s);
+    })), Promise.resolve());
+}
+
+function setStatus(msg) {
+    const el = document.getElementById('loader-status');
+    if (el) el.textContent = msg;
+}
+
+// =============================================
+// DATA
+// =============================================
+const PRODUCTS = [
+    { id:1, name:"Air Phantom X", cat:"running", price:189, oldPrice:249, badge:"hot", badgeText:"HOT",
+      colors:["#ff6b00","#00f5ff","#111111","#ffffff"], desc:"Ultra-lightweight running shoe featuring reactive foam and breathable mesh. Built for speed, designed to turn heads.",
+      specs:[{l:"Weight",v:"215g"},{l:"Drop",v:"8mm"},{l:"Material",v:"React Foam"},{l:"Upper",v:"Flyknit Mesh"}],
+      sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11,12], soldOut:[7,11.5], rating:4.9, reviews:2847, variant:0 },
+    { id:2, name:"Neo Drift Elite", cat:"lifestyle", price:159, oldPrice:null, badge:"new", badgeText:"NEW",
+      colors:["#7b2fff","#ff0080","#ffffff","#1a1a2e"], desc:"Street-ready lifestyle sneaker fusing fashion-forward aesthetics with all-day comfort technology.",
+      specs:[{l:"Weight",v:"280g"},{l:"Drop",v:"4mm"},{l:"Material",v:"Memory Foam"},{l:"Upper",v:"Suede/Mesh"}],
+      sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11], soldOut:[6.5], rating:4.8, reviews:1203, variant:1 },
+    { id:3, name:"Court King Pro", cat:"basketball", price:219, oldPrice:279, badge:"sale", badgeText:"SALE",
+      colors:["#111111","#ff6b00","#ffffff","#222244"], desc:"Dominate the court with superior ankle support, responsive cushioning and multi-directional traction.",
+      specs:[{l:"Weight",v:"380g"},{l:"Drop",v:"12mm"},{l:"Material",v:"Zoom Air"},{l:"Upper",v:"Full-Grain Leather"}],
+      sizes:[8,8.5,9,9.5,10,10.5,11,11.5,12,13], soldOut:[13], rating:4.7, reviews:3421, variant:2 },
+    { id:4, name:"Stealth Runner V2", cat:"running", price:145, oldPrice:null, badge:"new", badgeText:"NEW",
+      colors:["#050510","#00f5ff","#7b2fff","#334455"], desc:"Precision-engineered night runner with reflective details and ultra-responsive midsole for dawn-to-dusk performance.",
+      specs:[{l:"Weight",v:"195g"},{l:"Drop",v:"10mm"},{l:"Material",v:"BOOST Foam"},{l:"Upper",v:"Reflective Mesh"}],
+      sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11], soldOut:[], rating:4.9, reviews:892, variant:3 },
+    { id:5, name:"Force Trainer X", cat:"training", price:129, oldPrice:169, badge:"sale", badgeText:"SALE",
+      colors:["#ff6b00","#111111","#ffffff","#334433"], desc:"Versatile cross-training shoe with lateral stability pods and breathable performance upper for any workout.",
+      specs:[{l:"Weight",v:"320g"},{l:"Drop",v:"6mm"},{l:"Material",v:"Phylon Foam"},{l:"Upper",v:"Engineered Mesh"}],
+      sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12], soldOut:[12], rating:4.6, reviews:1567, variant:0 },
+    { id:6, name:"Urban Luxe Mid", cat:"lifestyle", price:199, oldPrice:null, badge:"new", badgeText:"NEW",
+      colors:["#f5f0e8","#111111","#c8a97e","#8b7355"], desc:"Premium leather mid-top with handcrafted details and cushioned heritage sole. The definition of effortless luxury.",
+      specs:[{l:"Weight",v:"350g"},{l:"Drop",v:"5mm"},{l:"Material",v:"Memory Cloud"},{l:"Upper",v:"Full-Grain Leather"}],
+      sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5], soldOut:[6], rating:4.8, reviews:734, variant:4 }
+];
+
+// 5 colorway variants applied as material tints on the photoreal shoe
+const SHOE_VARIANTS = [
+    { upper: 0xffffff, accent: 0xff6b00, sole: 0x1a1a1a, laces: 0xffffff },   // 0: Classic
+    { upper: 0x3d2066, accent: 0xff2d8f, sole: 0x0a0a1a, laces: 0xffffff },   // 1: Ultra Violet
+    { upper: 0x1a1a1a, accent: 0xff6b00, sole: 0x111111, laces: 0xff6b00 },   // 2: Blackout
+    { upper: 0x0b1733, accent: 0x00f5ff, sole: 0x050510, laces: 0x00f5ff },   // 3: Midnight
+    { upper: 0xe9d9bc, accent: 0x8b7355, sole: 0x5b4a31, laces: 0xf5f0e8 },   // 4: Sand
+];
+
+const COLLECTIONS = [
+    { name:"RUNNING SERIES", count:"128", bg:"#0a0a1a", variant:0, tall:true },
+    { name:"BASKETBALL",    count:"64",  bg:"#0a1020", variant:2, tall:false },
+    { name:"LIFESTYLE",     count:"96",  bg:"#140a20", variant:1, tall:false },
+    { name:"TRAINING",      count:"82",  bg:"#0a1a0a", variant:3, tall:false },
+];
+
+let cart = [];
+let SHOE_TEMPLATE = null;   // Pre-loaded, normalized gltf.scene
+let _firstRenderer = null;  // keep ref to bootstrap env map
+
+// =============================================
+// MODEL LOADING
+// =============================================
+function loadShoeFromUrl(url) {
+    return new Promise((resolve, reject) => {
+        const loader = new THREE.GLTFLoader();
+        loader.load(url, gltf => resolve(gltf), undefined, err => reject(err));
+    });
+}
+
+async function preloadShoeModel() {
+    if (!window.THREE || !THREE.GLTFLoader) return null;
+    let gltf = null;
+    for (const url of SHOE_URLS) {
+        try { gltf = await loadShoeFromUrl(url); break; }
+        catch (e) { console.warn('Shoe URL failed, trying next:', url, e.message); }
+    }
+    if (!gltf) return null;
+
+    const root = gltf.scene;
+    root.updateMatrixWorld(true);
+
+    // Center on origin and normalize size to a target length
+    const box = new THREE.Box3().setFromObject(root);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const center = new THREE.Vector3(); box.getCenter(center);
+    root.position.sub(center);
+
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const targetLen = 3.3;
+    root.scale.setScalar(targetLen / maxDim);
+
+    // Wrap so we can set base offset / rotation without fighting root scale
+    const wrap = new THREE.Group();
+    wrap.add(root);
+
+    // Drop shoe to sit on ground plane at y = -1.05
+    const bb = new THREE.Box3().setFromObject(wrap);
+    wrap.position.y = -bb.min.y - 1.05;
+
+    wrap.traverse(o => {
+        if (o.isMesh) {
+            o.castShadow = true;
+            o.receiveShadow = true;
+            if (o.material) {
+                if (o.material.map) o.material.map.anisotropy = 8;
+            }
+        }
+    });
+
+    SHOE_TEMPLATE = wrap;
+    return wrap;
+}
+
+// Deep-clone a shoe and tint materials per variant
+function makeShoe(variant = 0, scale = 1) {
+    if (!SHOE_TEMPLATE || !window.THREE) return null;
+    const clone = SHOE_TEMPLATE.clone(true);
+    clone.traverse(o => {
+        if (o.isMesh && o.material) o.material = o.material.clone();
+    });
+    const v = SHOE_VARIANTS[variant] || SHOE_VARIANTS[0];
+    clone.traverse(o => {
+        if (!o.isMesh || !o.material) return;
+        const name = ((o.material.name || '') + ' ' + (o.name || '')).toLowerCase();
+        if (name.includes('laces')) {
+            o.material.color.setHex(v.laces);
+        } else if (name.includes('outsole') || name.includes('sole') || name.includes('bottom')) {
+            o.material.color.setHex(v.sole);
+        } else if (name.includes('logo') || name.includes('stripe') || name.includes('accent')) {
+            o.material.color.setHex(v.accent);
+        } else if (name.includes('upper') || name.includes('shoe') || name.includes('base')) {
+            o.material.color.setHex(v.upper);
+        }
+        if (o.material.envMapIntensity !== undefined) o.material.envMapIntensity = 0.85;
+        o.material.needsUpdate = true;
+    });
+    clone.scale.multiplyScalar(scale);
+    return clone;
+}
+
+// =============================================
+// RENDERER / LIGHTING HELPERS
+// =============================================
+function pbrRenderer(canvas) {
+    const r = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+    r.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    r.outputEncoding = THREE.sRGBEncoding;
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.1;
+    r.physicallyCorrectLights = true;
+    r.shadowMap.enabled = true;
+    r.shadowMap.type = THREE.PCFSoftShadowMap;
+    if (!_firstRenderer) _firstRenderer = r;
+    return r;
+}
+
+// Build a soft studio environment map from RoomEnvironment (shared across scenes)
+let _envMap = null;
+function getEnvMap(renderer) {
+    if (_envMap) return _envMap;
+    if (!THREE.RoomEnvironment || !THREE.PMREMGenerator) return null;
+    try {
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        pmrem.compileEquirectangularShader();
+        const env = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04);
+        _envMap = env.texture;
+        pmrem.dispose();
+    } catch (e) { console.warn('Env map build failed', e); }
+    return _envMap;
+}
+
+function studioLights(scene, renderer, accent = 0xff6b00) {
+    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+
+    const key = new THREE.DirectionalLight(0xffffff, 3.2);
+    key.position.set(4, 8, 6);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.near = 1; key.shadow.camera.far = 20;
+    key.shadow.camera.left = -4; key.shadow.camera.right = 4;
+    key.shadow.camera.top = 4; key.shadow.camera.bottom = -4;
+    key.shadow.bias = -0.0005;
+    scene.add(key);
+
+    const rim = new THREE.PointLight(accent, 18, 22);
+    rim.position.set(-4, 2, -3);
+    scene.add(rim);
+
+    const fill = new THREE.PointLight(0x00f5ff, 10, 18);
+    fill.position.set(3, -1, -4);
+    scene.add(fill);
+
+    const bottomGlow = new THREE.PointLight(0x7b2fff, 6, 14);
+    bottomGlow.position.set(0, -2.5, 2);
+    scene.add(bottomGlow);
+
+    const env = getEnvMap(renderer);
+    if (env) scene.environment = env;
+}
+
+function groundPlane(scene, opacity = 0.4) {
+    const geo = new THREE.PlaneGeometry(16, 16);
+    const mat = new THREE.MeshStandardMaterial({
+        color: 0x050508, roughness: 0.08, metalness: 0.9, transparent: true, opacity
+    });
+    const plane = new THREE.Mesh(geo, mat);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1.06;
+    plane.receiveShadow = true;
+    scene.add(plane);
+    return plane;
+}
+
+// =============================================
+// HERO 3D
+// =============================================
+let heroRenderer, heroScene, heroCamera, heroShoe, heroT = 0, heroMX = 0, heroMY = 0;
+function initHero3D() {
+    const canvas = document.getElementById('hero-canvas');
+    if (!canvas || !window.THREE) return;
+    heroRenderer = pbrRenderer(canvas);
+    const w = canvas.parentElement.offsetWidth, h = canvas.parentElement.offsetHeight;
+    heroRenderer.setSize(w, h);
+
+    heroScene = new THREE.Scene();
+    heroCamera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+    heroCamera.position.set(0, 0.3, 7);
+
+    studioLights(heroScene, heroRenderer, 0xff6b00);
+    groundPlane(heroScene, 0.35);
+
+    heroShoe = makeShoe(0, 1.1);
+    if (heroShoe) {
+        heroShoe.rotation.y = -0.4;
+        heroScene.add(heroShoe);
+    }
+
+    document.getElementById('hero-3d').addEventListener('mousemove', e => {
+        const r = e.currentTarget.getBoundingClientRect();
+        heroMX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+        heroMY = -((e.clientY - r.top) / r.height - 0.5) * 2;
+    });
+
+    window.addEventListener('resize', () => {
+        const w2 = canvas.parentElement.offsetWidth, h2 = canvas.parentElement.offsetHeight;
+        heroRenderer.setSize(w2, h2);
+        heroCamera.aspect = w2 / h2;
+        heroCamera.updateProjectionMatrix();
+    });
+
+    animHero();
+}
+function animHero() {
+    heroT += 0.008;
+    if (heroShoe) {
+        heroShoe.rotation.y += (heroMX * 1.0 - 0.3 - heroShoe.rotation.y) * 0.04;
+        heroShoe.rotation.x += (heroMY * 0.25 - heroShoe.rotation.x) * 0.04;
+        heroShoe.position.y = Math.sin(heroT) * 0.12 + 0.1;
+    }
+    heroRenderer.render(heroScene, heroCamera);
+    requestAnimationFrame(animHero);
+}
+
+// =============================================
+// PRODUCT CARD MINI SCENES
+// =============================================
+const miniScenes = {};
+function initMiniShoe(canvasId, variant) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || !window.THREE) return;
+    const w = canvas.offsetWidth || 310, h = canvas.offsetHeight || 270;
+    const renderer = pbrRenderer(canvas);
+    renderer.setSize(w, h);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+    camera.position.set(0, 0.2, 6);
+
+    studioLights(scene, renderer, 0xff6b00);
+
+    const shoe = makeShoe(variant, 0.85);
+    if (shoe) { shoe.rotation.y = 0.4; scene.add(shoe); }
+
+    miniScenes[canvasId] = { renderer, scene, camera, shoe, variant, hovered: false, mx: 0, my: 0, t: 0 };
+
+    canvas.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        const s = miniScenes[canvasId]; if (!s) return;
+        s.mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+        s.my = -((e.clientY - r.top) / r.height - 0.5) * 2;
+        s.hovered = true;
+    });
+    canvas.addEventListener('mouseleave', () => { if (miniScenes[canvasId]) miniScenes[canvasId].hovered = false; });
+
+    function loop() {
+        const s = miniScenes[canvasId];
+        if (!s) return;
+        s.t += 0.012;
+        if (s.shoe) {
+            if (s.hovered) {
+                s.shoe.rotation.y += (s.mx * 1.5 - s.shoe.rotation.y) * 0.08;
+                s.shoe.rotation.x += (s.my * 0.3 - s.shoe.rotation.x) * 0.08;
+            } else {
+                s.shoe.rotation.y += 0.008;
+                s.shoe.rotation.x += (0 - s.shoe.rotation.x) * 0.03;
+            }
+            s.shoe.position.y = Math.sin(s.t) * 0.05 + 0.05;
+        }
+        s.renderer.render(s.scene, s.camera);
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+// =============================================
+// RENDER PRODUCTS
+// =============================================
+function renderProducts(filter = 'all') {
+    const grid = document.getElementById('p-grid');
+    const list = filter === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
+
+    grid.innerHTML = list.map(p => `
+        <div class="p-card reveal" data-id="${p.id}">
+            <div class="p-card-img">
+                <canvas class="p-shoe-canvas" id="mini-canvas-${p.id}" width="310" height="270"></canvas>
+                <span class="p-badge b-${p.badge}">${p.badgeText}</span>
+                <button class="p-wishlist" onclick="toggleWish(this,event)"><i class="fas fa-heart"></i></button>
+                <div class="p-view-3d">
+                    <button class="view3d-btn" onclick="openModal(PRODUCTS.find(x=>x.id==${p.id}),event)">
+                        <i class="fas fa-cube"></i> VIEW IN 3D
+                    </button>
+                    <button class="view3d-btn outline" onclick="addToCart(PRODUCTS.find(x=>x.id==${p.id}),event)">
+                        <i class="fas fa-cart-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-info">
+                <div class="p-cat">${p.cat}</div>
+                <div class="p-name">${p.name}</div>
+                <div class="p-colors">
+                    ${p.colors.map((c,i) => `<div class="p-color ${i===0?'active':''}" style="background:${c}" onclick="changeCardColor(${p.id},${i},this)"></div>`).join('')}
+                </div>
+                <div class="p-rating">
+                    <div class="p-stars">${'★'.repeat(Math.floor(p.rating))}${'☆'.repeat(5-Math.floor(p.rating))}</div>
+                    <span class="p-rev">(${p.reviews.toLocaleString()})</span>
+                </div>
+                <div class="p-foot">
+                    <div class="p-price-wrap">
+                        <div class="p-price">$${p.price}</div>
+                        ${p.oldPrice ? `<div class="p-price-old">$${p.oldPrice}</div>` : ''}
+                    </div>
+                    <button class="p-add" onclick="addToCart(PRODUCTS.find(x=>x.id==${p.id}),event)"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    if (window.THREE && SHOE_TEMPLATE) {
+        // Stagger init to keep FPS smooth
+        list.forEach((p, i) => setTimeout(() => initMiniShoe(`mini-canvas-${p.id}`, p.variant), i * 120));
+    }
+    observeReveal();
+}
+
+function findClosestVariant(hexColor) {
+    const map = { '#ff6b00': 0, '#7b2fff': 1, '#111111': 2, '#050510': 3, '#f5f0e8': 4 };
+    return map[hexColor] !== undefined ? map[hexColor] : 0;
+}
+
+function changeCardColor(pid, colorIdx, el) {
+    el.parentElement.querySelectorAll('.p-color').forEach(d => d.classList.remove('active'));
+    el.classList.add('active');
+    const p = PRODUCTS.find(x => x.id === pid);
+    if (!p) return;
+    const key = `mini-canvas-${pid}`;
+    const s = miniScenes[key];
+    if (!s) return;
+    const oldShoe = s.shoe;
+    const newV = findClosestVariant(p.colors[colorIdx]);
+    const newShoe = makeShoe(newV, 0.85);
+    if (newShoe) {
+        if (oldShoe) { newShoe.rotation.copy(oldShoe.rotation); s.scene.remove(oldShoe); }
+        else { newShoe.rotation.y = 0.4; }
+        s.scene.add(newShoe);
+        s.shoe = newShoe;
+    }
+}
+
+// =============================================
+// COLLECTIONS
+// =============================================
+function renderCollections() {
+    const grid = document.getElementById('col-grid');
+    grid.innerHTML = COLLECTIONS.map((c, i) => `
+        <div class="col-card ${c.tall ? 'tall' : ''}">
+            <div class="col-canvas-wrap" style="background:${c.bg};display:flex;align-items:center;justify-content:center;">
+                <canvas class="col-canvas" id="col-canvas-${i}"></canvas>
+            </div>
+            <div class="col-overlay">
+                <div class="col-name">${c.name}</div>
+                <div class="col-count">${c.count} PRODUCTS</div>
+                <a href="#products" class="col-link">Shop Now <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    `).join('');
+    if (window.THREE && SHOE_TEMPLATE) {
+        COLLECTIONS.forEach((c, i) => setTimeout(() => initCollectionCanvas(`col-canvas-${i}`, c.variant), i * 140));
+    }
+}
+
+function initCollectionCanvas(canvasId, variant) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || !window.THREE) return;
+    const parent = canvas.parentElement;
+    const w = parent.offsetWidth || 300, h = parent.offsetHeight || 290;
+    canvas.width = w; canvas.height = h;
+    const renderer = pbrRenderer(canvas);
+    renderer.setSize(w, h);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100);
+    camera.position.set(0, 0.3, 6);
+
+    studioLights(scene, renderer, SHOE_VARIANTS[variant].accent);
+
+    const shoe = makeShoe(variant, 0.78);
+    if (shoe) scene.add(shoe);
+
+    let t = 0;
+    function loop() {
+        t += 0.01;
+        if (shoe) {
+            shoe.rotation.y = t * 0.55;
+            shoe.position.y = Math.sin(t * 1.2) * 0.06 + 0.05;
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+// =============================================
+// FEATURE 3D (large interactive)
+// =============================================
+let featRenderer, featScene, featCamera, featShoe, featT = 0, featMX = 0, featMY = 0;
+function initFeat3D() {
+    const canvas = document.getElementById('feat-canvas');
+    if (!canvas || !window.THREE) return;
+    const w = canvas.parentElement.offsetWidth, h = canvas.parentElement.offsetHeight;
+    featRenderer = pbrRenderer(canvas);
+    featRenderer.setSize(w, h);
+
+    featScene = new THREE.Scene();
+    featCamera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+    featCamera.position.set(0, 0.5, 6.5);
+
+    studioLights(featScene, featRenderer, 0x7b2fff);
+    groundPlane(featScene, 0.3);
+
+    featShoe = makeShoe(1, 1.05);
+    if (featShoe) featScene.add(featShoe);
+
+    canvas.parentElement.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        featMX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+        featMY = -((e.clientY - r.top) / r.height - 0.5) * 2;
+    });
+
+    window.addEventListener('resize', () => {
+        const w2 = canvas.parentElement.offsetWidth, h2 = canvas.parentElement.offsetHeight;
+        featRenderer.setSize(w2, h2);
+        featCamera.aspect = w2 / h2;
+        featCamera.updateProjectionMatrix();
+    });
+
+    animFeat();
+}
+function animFeat() {
+    featT += 0.009;
+    if (featShoe) {
+        featShoe.rotation.y += (featMX * 1.3 - featShoe.rotation.y) * 0.05;
+        featShoe.rotation.x += (featMY * 0.25 - featShoe.rotation.x) * 0.05;
+        featShoe.position.y = Math.sin(featT) * 0.1 + 0.05;
+    }
+    featRenderer.render(featScene, featCamera);
+    requestAnimationFrame(animFeat);
+}
+
+// =============================================
+// MODAL 3D VIEWER (drag / zoom / orbit)
+// =============================================
+let modalRenderer, modalScene, modalCamera, modalShoe;
+let modalDragging = false, modalLastX = 0, modalLastY = 0;
+let modalRotX = 0, modalRotY = 0, modalAutoRot = true;
+let modalT = 0, modalZoom = 6;
+let currentModalProduct = null;
+
+function initModalRenderer() {
+    if (modalRenderer) return;
+    const canvas = document.getElementById('modal-canvas');
+    if (!canvas || !window.THREE) return;
+
+    modalRenderer = pbrRenderer(canvas);
+    modalScene = new THREE.Scene();
+    modalCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    modalCamera.position.set(0, 0.5, modalZoom);
+
+    studioLights(modalScene, modalRenderer, 0xff6b00);
+    groundPlane(modalScene, 0.4);
+
+    const gridHelper = new THREE.GridHelper(8, 12, 0x222244, 0x111122);
+    gridHelper.position.y = -1.04;
+    modalScene.add(gridHelper);
+
+    canvas.addEventListener('mousedown', e => {
+        modalDragging = true; modalLastX = e.clientX; modalLastY = e.clientY;
+        modalAutoRot = false;
+        const btn = document.getElementById('auto-rot-btn'); if (btn) btn.style.color = 'var(--text2)';
+    });
+    window.addEventListener('mouseup', () => modalDragging = false);
+    window.addEventListener('mousemove', e => {
+        if (!modalDragging) return;
+        const dx = e.clientX - modalLastX, dy = e.clientY - modalLastY;
+        modalRotY += dx * 0.01; modalRotX += dy * 0.008;
+        modalRotX = Math.max(-0.9, Math.min(0.9, modalRotX));
+        modalLastX = e.clientX; modalLastY = e.clientY;
+    });
+
+    canvas.addEventListener('touchstart', e => {
+        const t = e.touches[0]; modalDragging = true;
+        modalLastX = t.clientX; modalLastY = t.clientY;
+    });
+    canvas.addEventListener('touchend', () => modalDragging = false);
+    canvas.addEventListener('touchmove', e => {
+        if (!modalDragging) return;
+        const t = e.touches[0];
+        const dx = t.clientX - modalLastX, dy = t.clientY - modalLastY;
+        modalRotY += dx * 0.012; modalRotX += dy * 0.009;
+        modalRotX = Math.max(-0.9, Math.min(0.9, modalRotX));
+        modalLastX = t.clientX; modalLastY = t.clientY;
+    }, { passive: true });
+
+    canvas.addEventListener('wheel', e => {
+        modalZoom += e.deltaY * 0.005;
+        modalZoom = Math.max(3, Math.min(12, modalZoom));
+        e.preventDefault();
+    }, { passive: false });
+
+    animModal();
+}
+
+function animModal() {
+    if (!modalRenderer) return;
+    modalT += 0.01;
+    if (modalAutoRot) modalRotY += 0.006;
+    if (modalShoe) {
+        modalShoe.rotation.y = modalRotY;
+        modalShoe.rotation.x = modalRotX;
+        modalShoe.position.y = Math.sin(modalT * 0.8) * 0.04 + 0.05;
+    }
+    modalCamera.position.z += (modalZoom - modalCamera.position.z) * 0.08;
+
+    const canvas = document.getElementById('modal-canvas');
+    const w = canvas.parentElement.offsetWidth, h = canvas.parentElement.offsetHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+        modalRenderer.setSize(w, h);
+        modalCamera.aspect = w / h;
+        modalCamera.updateProjectionMatrix();
+    }
+    modalRenderer.render(modalScene, modalCamera);
+    requestAnimationFrame(animModal);
+}
+
+function openModal(product, evt) {
+    if (evt) evt.stopPropagation();
+    if (!product) return;
+    currentModalProduct = product;
+
+    document.getElementById('modal-3d').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    if (modalShoe && modalScene) { modalScene.remove(modalShoe); modalShoe = null; }
+    modalRotX = 0; modalRotY = 0; modalZoom = 6; modalAutoRot = true;
+    const arb = document.getElementById('auto-rot-btn'); if (arb) arb.style.color = 'var(--primary)';
+
+    if (!modalRenderer) initModalRenderer();
+    if (modalScene && window.THREE && SHOE_TEMPLATE) {
+        modalShoe = makeShoe(product.variant, 1.05);
+        if (modalShoe) modalScene.add(modalShoe);
+    }
+
+    const info = document.getElementById('modal-info');
+    info.innerHTML = `
+        <button class="modal-close" id="modal-close-btn"><i class="fas fa-times"></i></button>
+        <div class="modal-cat">${product.cat}</div>
+        <div class="modal-name">${product.name}</div>
+        <div class="modal-rating">
+            <span style="color:#ffd700;font-size:0.9rem;">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5-Math.floor(product.rating))}</span>
+            <span style="color:var(--text2);font-size:0.82rem;">(${product.reviews.toLocaleString()} reviews)</span>
+        </div>
+        <p class="modal-desc">${product.desc}</p>
+        <div class="modal-price-row">
+            <span class="modal-price">$${product.price}</span>
+            ${product.oldPrice ? `<span class="modal-old-price">$${product.oldPrice}</span><span style="background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.85rem;">SAVE $${product.oldPrice - product.price}</span>` : ''}
+        </div>
+        <div class="modal-section-label">COLORWAY</div>
+        <div class="modal-colors" id="modal-color-swatch">
+            ${product.colors.map((c,i) => `<div class="modal-color ${i===0?'active':''}" style="background:${c}" onclick="changeModalColor(${i},this)"></div>`).join('')}
+        </div>
+        <div class="modal-section-label">SELECT SIZE (US)</div>
+        <div class="modal-sizes">
+            ${product.sizes.map(s => `<button class="size-btn ${product.soldOut.includes(s)?'sold':''}" onclick="selectSize(this,${s})">${s}${product.soldOut.includes(s)?'<br><span style="font-size:0.55rem;letter-spacing:1px;">OUT</span>':''}</button>`).join('')}
+        </div>
+        <div class="modal-section-label">SPECIFICATIONS</div>
+        <div class="modal-specs">
+            ${product.specs.map(s => `<div class="spec-item"><div class="spec-label">${s.l}</div><div class="spec-val">${s.v}</div></div>`).join('')}
+        </div>
+        <div class="modal-btns">
+            <button class="modal-add" onclick="addToCartFromModal()"><i class="fas fa-cart-plus"></i> ADD TO CART</button>
+            <button class="modal-wish" onclick="this.style.color='#ff0050';this.style.borderColor='#ff0050';toast('Added to wishlist!')"><i class="fas fa-heart"></i></button>
+        </div>
+    `;
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+}
+
+function closeModal() {
+    document.getElementById('modal-3d').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.getElementById('modal-bd').addEventListener('click', closeModal);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function changeModalColor(idx, el) {
+    el.parentElement.querySelectorAll('.modal-color').forEach(d => d.classList.remove('active'));
+    el.classList.add('active');
+    if (!currentModalProduct || !modalScene || !window.THREE || !SHOE_TEMPLATE) return;
+    const oldShoe = modalShoe;
+    const newV = findClosestVariant(currentModalProduct.colors[idx]);
+    const newShoe = makeShoe(newV, 1.05);
+    if (newShoe) {
+        if (oldShoe) { newShoe.rotation.copy(oldShoe.rotation); modalScene.remove(oldShoe); }
+        modalScene.add(newShoe);
+        modalShoe = newShoe;
+    }
+}
+
+function selectSize(el, size) {
+    if (el.classList.contains('sold')) return;
+    el.closest('.modal-sizes').querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+function addToCartFromModal() {
+    if (!currentModalProduct) return;
+    const activeSize = document.querySelector('.size-btn.active');
+    if (!activeSize) { toast('Please select a size first!'); return; }
+    addToCart(currentModalProduct);
+    closeModal();
+}
+function resetModalCam() {
+    modalRotX = 0; modalRotY = 0; modalZoom = 6; modalAutoRot = true;
+    const btn = document.getElementById('auto-rot-btn'); if (btn) btn.style.color = 'var(--primary)';
+}
+function zoomModal(delta) { modalZoom = Math.max(3, Math.min(12, modalZoom + delta)); }
+function toggleAutoRotate() {
+    modalAutoRot = !modalAutoRot;
+    const btn = document.getElementById('auto-rot-btn');
+    if (btn) btn.style.color = modalAutoRot ? 'var(--primary)' : 'var(--text2)';
+}
+
+// =============================================
+// CART
+// =============================================
+function addToCart(product, evt) {
+    if (evt) evt.stopPropagation();
+    const ex = cart.find(i => i.id === product.id);
+    if (ex) ex.qty++;
+    else cart.push({ ...product, qty: 1 });
+    updateCart();
+    toast(`${product.name} added to cart! 🔥`);
+}
+function updateCart() {
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    document.getElementById('cart-badge').textContent = count;
+    document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
+    const body = document.getElementById('cart-body');
+    if (!cart.length) {
+        body.innerHTML = `<div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>YOUR CART IS EMPTY</p></div>`;
+        return;
+    }
+    body.innerHTML = cart.map(item => `
+        <div class="ci">
+            <div class="ci-img">${getShoeEmoji(item.cat)}</div>
+            <div class="ci-info">
+                <div class="ci-name">${item.name}</div>
+                <div class="ci-price">$${item.price}</div>
+                <div class="ci-qty">
+                    <button class="q-btn" onclick="updateQty(${item.id},-1)">−</button>
+                    <span class="q-num">${item.qty}</span>
+                    <button class="q-btn" onclick="updateQty(${item.id},1)">+</button>
+                    <button class="ci-del" onclick="removeItem(${item.id})"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+function getShoeEmoji(cat) {
+    const map = { running: '🏃', basketball: '🏀', lifestyle: '✨', training: '💪' };
+    return map[cat] || '👟';
+}
+function updateQty(id, d) {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+    item.qty += d;
+    if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    updateCart();
+}
+function removeItem(id) { cart = cart.filter(i => i.id !== id); updateCart(); }
+
+document.getElementById('cart-toggle').addEventListener('click', () => {
+    document.getElementById('cart-sidebar').classList.add('open');
+    document.getElementById('cart-overlay').classList.add('on');
+});
+['cart-x', 'cart-overlay'].forEach(id => {
+    document.getElementById(id).addEventListener('click', () => {
+        document.getElementById('cart-sidebar').classList.remove('open');
+        document.getElementById('cart-overlay').classList.remove('on');
+    });
+});
+
+// =============================================
+// TOAST / WISHLIST / PARTICLES / CURSOR
+// =============================================
+let toastTimer;
+function toast(msg) {
+    document.getElementById('toast-msg').textContent = msg;
+    document.getElementById('toast').classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 3200);
+}
+function hideToast() { document.getElementById('toast').classList.remove('show'); }
+
+function toggleWish(el, evt) {
+    evt.stopPropagation();
+    el.classList.toggle('active');
+    toast(el.classList.contains('active') ? '❤️ Added to wishlist!' : 'Removed from wishlist');
+}
+
+function initParticles() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    canvas.width = innerWidth; canvas.height = innerHeight;
+    const pts = Array.from({ length: 70 }, () => ({
+        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.5 + 0.5, o: Math.random() * 0.4 + 0.05,
+        c: Math.random() > 0.5 ? '#ff6b00' : '#00f5ff'
+    }));
+    let mx = -9999, my = -9999;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pts.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 80) { p.x += dx / dist * 1.2; p.y += dy / dist * 1.2; }
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.c; ctx.globalAlpha = p.o; ctx.fill();
+        });
+        pts.forEach((a, i) => pts.slice(i + 1).forEach(b => {
+            const d = Math.hypot(a.x - b.x, a.y - b.y);
+            if (d < 110) {
+                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+                ctx.strokeStyle = '#ff6b00'; ctx.globalAlpha = (1 - d / 110) * 0.1; ctx.lineWidth = 0.6; ctx.stroke();
+            }
+        }));
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+    }
+    draw();
+    window.addEventListener('resize', () => { canvas.width = innerWidth; canvas.height = innerHeight; });
+}
+
+function initCursor() {
+    const cur = document.getElementById('cursor'), ring = document.getElementById('cursor-ring');
+    document.addEventListener('mousemove', e => {
+        cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
+        ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
+    });
+    document.addEventListener('mousedown', () => cur.classList.add('clicked'));
+    document.addEventListener('mouseup', () => cur.classList.remove('clicked'));
+    document.querySelectorAll('button, a, .p-card, .col-card').forEach(el => {
+        el.addEventListener('mouseenter', () => ring.classList.add('hovered'));
+        el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
+    });
+}
+
+function observeReveal() {
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach((e, i) => {
+            if (e.isIntersecting) setTimeout(() => e.target.classList.add('up'), i * 80);
+        });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => obs.observe(el));
+}
+
+function animCounters() {
+    document.querySelectorAll('.stat-n').forEach(el => {
+        const target = +el.dataset.target;
+        let val = 0;
+        const step = target / 65;
+        const t = setInterval(() => {
+            val += step;
+            if (val >= target) { val = target; clearInterval(t); }
+            el.textContent = val >= 1000 ? Math.floor(val / 1000) + 'K+' : Math.floor(val) + '+';
+        }, 25);
+    });
+}
+
+window.addEventListener('scroll', () => {
+    document.getElementById('nav').classList.toggle('scrolled', scrollY > 50);
+});
+
+document.querySelectorAll('.f-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        renderProducts(this.dataset.f);
+    });
+});
+
+function nlSubmit(e) {
+    e.preventDefault();
+    toast('🎉 Welcome! You\'re now in the exclusive drop list!');
+    e.target.reset();
+}
+
+// =============================================
+// LOADER ANIMATION
+// =============================================
+function initLoader() {
+    const canvas = document.getElementById('loader-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = innerWidth; canvas.height = innerHeight;
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    let t = 0;
+    function drawLoader() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2 + t;
+            const x = cx + Math.cos(angle) * 120, y = cy + Math.sin(angle) * 120;
+            const r = 8 + Math.sin(t * 2 + i) * 4;
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = i % 2 === 0 ? '#ff6b00' : '#00f5ff';
+            ctx.globalAlpha = 0.6 + Math.sin(t + i) * 0.4;
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        t += 0.04;
+        if (document.getElementById('loader').style.display !== 'none') requestAnimationFrame(drawLoader);
+    }
+    drawLoader();
+}
+
+// =============================================
+// BOOT
+// =============================================
+initLoader();
+let prog = 0;
+const progBar = document.getElementById('loader-fill');
+const progInterval = setInterval(() => {
+    prog += Math.random() * 2.5;
+    if (prog > 90) prog = 90;
+    progBar.style.width = prog + '%';
+}, 90);
+
+function finishLoader() {
+    prog = 100;
+    progBar.style.width = '100%';
+    clearInterval(progInterval);
+    setTimeout(() => {
+        const loader = document.getElementById('loader');
+        loader.style.transition = 'opacity 0.6s ease';
+        loader.style.opacity = '0';
+        setTimeout(() => { loader.style.display = 'none'; }, 600);
+    }, 300);
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+    setStatus('LOADING 3D LIBRARIES');
+    try {
+        await loadScripts(SCRIPTS);
+    } catch (e) {
+        console.error('Library load failed:', e);
+        setStatus('3D UNAVAILABLE · CONTINUING');
+    }
+
+    setStatus('FETCHING PHOTOREAL SHOE MODEL');
+    try {
+        if (window.THREE && THREE.GLTFLoader) await preloadShoeModel();
+    } catch (e) { console.warn('Shoe preload failed', e); }
+
+    setStatus('READY');
+    finishLoader();
+
+    // Non-3D UI
+    initParticles();
+    initCursor();
+    observeReveal();
+    renderProducts();
+    renderCollections();
+    animCounters();
+
+    // 3D scenes — stagger so first paint stays smooth
+    if (window.THREE && SHOE_TEMPLATE) {
+        initHero3D();
+        setTimeout(() => initFeat3D(), 400);
+        setTimeout(() => initModalRenderer(), 900);
+    } else {
+        // Graceful fallback: hide the 3D-only visuals
+        const heroC = document.getElementById('hero-canvas');
+        if (heroC) heroC.style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>
